@@ -63,7 +63,7 @@ app_secret = "NUdqS94cUBdpKys7ISYexm1cCn5TizKe"
 expose = false
 
 [hooks]
-post_deploy = ["php artisan migrate --force", "php artisan storage:link || true", "export NODE_OPTIONS=--max-old-space-size=512 LOW_MEMORY_BUILD=1; yes | pnpm i --prefer-offline && pnpm run build"]
+post_deploy = ["php artisan migrate --force --seed", "php artisan storage:link || true", "export NODE_OPTIONS=--max-old-space-size=512 LOW_MEMORY_BUILD=1; yes | pnpm i --prefer-offline && pnpm run build"]
 
 [available_commands.refine]
 command = "export NODE_OPTIONS=--max-old-space-size=256 LOW_MEMORY_BUILD=1; yes | pnpm i --prefer-offline && pnpm run build"
