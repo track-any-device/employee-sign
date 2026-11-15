@@ -1,0 +1,196 @@
+# ---------------------------------------------------------------------------
+# This file contains real credentials, generated for this download: each
+# [sidecars.<engine>] table sets that service's credentials, and the same
+# values are written into the [containers.*.env] of the services that
+# connect to it. Host Swarm does not hand a sidecar's connection variables
+# to your services by itself — the env tables below are that mapping.
+#
+# After the first successful deploy Host Swarm has stored all of them: the
+# sidecar credentials on the swarm, every [containers.*.env] value on its
+# Environment Variables page. From then on the values in this file are
+# ignored (a running database keeps the password it was created with), and
+# every deployment log lists the ones this file still carries. So:
+#
+#   1. Delete the credentials and secret values from swarm.toml. Keep a
+#      copy of the cleaned file outside the repository.
+#   2. Remove swarm.toml from your git history, which still holds them:
+#
+#        git filter-repo --path swarm.toml --invert-paths --force
+#
+#      This rewrites every commit (new commit ids, so collaborators must
+#      re-clone), deletes swarm.toml from all of history and from your
+#      working copy, and removes the "origin" remote. Put the cleaned
+#      swarm.toml back, commit it, re-add the remote and force-push:
+#
+#        git remote add origin <your repository url>
+#        git push --force --all origin
+#
+#   3. If the repository was ever pushed anywhere public, change every
+#      credential it contained: rewriting history does not reach copies
+#      somebody already cloned or forked.
+# ---------------------------------------------------------------------------
+
+[app]
+name = "Laravel 13 (PHP 8.5) Template"
+
+[sidecars]
+mysql5 = false
+mariadb = false
+postgres = false
+influxdb = false
+mongodb = false
+redis = true
+
+[sidecars.mysql]
+database = "laravel"
+username = "laravel"
+password = "JoVLFj53YEt5mCmTkaY1QJ0I"
+# expose = true publishes it on the internet — read "Exposing a sidecar" in the swarm.toml docs first.
+expose = false
+
+[sidecars.minio]
+access_key = "app-2etmwbgf"
+secret_key = "nM71Ypbuf74pXWYfS9HcCZ4SUFYym9VO"
+bucket = "app"
+# expose = true publishes it on the internet — read "Exposing a sidecar" in the swarm.toml docs first.
+expose = false
+
+[sidecars.soketi]
+app_id = "4qa6oehyonns"
+app_key = "gkfcnzuog2ckodv0kaqk"
+app_secret = "NUdqS94cUBdpKys7ISYexm1cCn5TizKe"
+# expose = true publishes it on the internet — read "Exposing a sidecar" in the swarm.toml docs first.
+expose = false
+
+[hooks]
+post_deploy = ["php artisan migrate --force", "php artisan storage:link || true", "export NODE_OPTIONS=--max-old-space-size=512; yes | pnpm i --prefer-offline && pnpm run build"]
+
+[available_commands.refine]
+command = "export NODE_OPTIONS=--max-old-space-size=512; yes | pnpm i --prefer-offline && pnpm run build"
+container = "app"
+
+[containers.app]
+image = "hostswarm/laravel-13-php-8.5"
+version = "latest"
+app.mounts = ["/:/var/www/html"]
+public = true
+port = 8080
+
+[containers.app.env]
+APP_NAME = "Laravel"
+APP_ENV = "production"
+APP_DEBUG = "false"
+APP_LOCALE = "en"
+LOG_CHANNEL = "stderr"
+LOG_LEVEL = "error"
+SESSION_DRIVER = "file"
+HS_SCHEDULER = "false"
+HS_QUEUE_WORKER = "false"
+DB_CONNECTION = "mysql"
+DB_HOST = "db"
+DB_PORT = "3306"
+DB_DATABASE = "laravel"
+DB_USERNAME = "laravel"
+DB_PASSWORD = "JoVLFj53YEt5mCmTkaY1QJ0I"
+APP_KEY = "base64:jepmb0YJ1GlSGBlOGMQF3Rpm3d5CUPUc/NRwK5H6/CE="
+FILESYSTEM_DISK = "s3"
+BROADCAST_CONNECTION = "pusher"
+AWS_ACCESS_KEY_ID = "app-2etmwbgf"
+AWS_SECRET_ACCESS_KEY = "nM71Ypbuf74pXWYfS9HcCZ4SUFYym9VO"
+AWS_DEFAULT_REGION = "us-east-1"
+AWS_BUCKET = "app"
+AWS_ENDPOINT = "http://minio:9000"
+AWS_USE_PATH_STYLE_ENDPOINT = "true"
+PUSHER_APP_ID = "4qa6oehyonns"
+PUSHER_APP_KEY = "gkfcnzuog2ckodv0kaqk"
+PUSHER_APP_SECRET = "NUdqS94cUBdpKys7ISYexm1cCn5TizKe"
+PUSHER_HOST = "soketi"
+PUSHER_PORT = "6001"
+PUSHER_SCHEME = "http"
+PUSHER_APP_CLUSTER = "mt1"
+REDIS_CLIENT = "phpredis"
+REDIS_HOST = "redis"
+REDIS_PORT = "6379"
+
+# Disabled by default — uncomment every line below to run "cron".
+# [containers.cron]
+# image = "hostswarm/laravel-13-php-8.5"
+# version = "latest"
+# app.mounts = ["/:/var/www/html"]
+# public = false
+
+# [containers.cron.env]
+# HS_WEB = "false"
+# HS_COMPOSER_INSTALL = "false"
+# HS_SCHEDULER = "true"
+# DB_CONNECTION = "mysql"
+# DB_HOST = "db"
+# DB_PORT = "3306"
+# DB_DATABASE = "laravel"
+# DB_USERNAME = "laravel"
+# DB_PASSWORD = "JoVLFj53YEt5mCmTkaY1QJ0I"
+# APP_KEY = "base64:jepmb0YJ1GlSGBlOGMQF3Rpm3d5CUPUc/NRwK5H6/CE="
+# FILESYSTEM_DISK = "s3"
+# BROADCAST_CONNECTION = "pusher"
+# AWS_ACCESS_KEY_ID = "app-2etmwbgf"
+# AWS_SECRET_ACCESS_KEY = "nM71Ypbuf74pXWYfS9HcCZ4SUFYym9VO"
+# AWS_DEFAULT_REGION = "us-east-1"
+# AWS_BUCKET = "app"
+# AWS_ENDPOINT = "http://minio:9000"
+# AWS_USE_PATH_STYLE_ENDPOINT = "true"
+# PUSHER_APP_ID = "4qa6oehyonns"
+# PUSHER_APP_KEY = "gkfcnzuog2ckodv0kaqk"
+# PUSHER_APP_SECRET = "NUdqS94cUBdpKys7ISYexm1cCn5TizKe"
+# PUSHER_HOST = "soketi"
+# PUSHER_PORT = "6001"
+# PUSHER_SCHEME = "http"
+# PUSHER_APP_CLUSTER = "mt1"
+# REDIS_CLIENT = "phpredis"
+# REDIS_HOST = "redis"
+# REDIS_PORT = "6379"
+
+# Disabled by default — uncomment every line below to run "queue".
+# [containers.queue]
+# image = "hostswarm/laravel-13-php-8.5"
+# version = "latest"
+# app.mounts = ["/:/var/www/html"]
+# public = false
+
+# [containers.queue.env]
+# HS_WEB = "false"
+# HS_COMPOSER_INSTALL = "false"
+# HS_QUEUE_WORKER = "true"
+# DB_CONNECTION = "mysql"
+# DB_HOST = "db"
+# DB_PORT = "3306"
+# DB_DATABASE = "laravel"
+# DB_USERNAME = "laravel"
+# DB_PASSWORD = "JoVLFj53YEt5mCmTkaY1QJ0I"
+# APP_KEY = "base64:jepmb0YJ1GlSGBlOGMQF3Rpm3d5CUPUc/NRwK5H6/CE="
+# FILESYSTEM_DISK = "s3"
+# BROADCAST_CONNECTION = "pusher"
+# AWS_ACCESS_KEY_ID = "app-2etmwbgf"
+# AWS_SECRET_ACCESS_KEY = "nM71Ypbuf74pXWYfS9HcCZ4SUFYym9VO"
+# AWS_DEFAULT_REGION = "us-east-1"
+# AWS_BUCKET = "app"
+# AWS_ENDPOINT = "http://minio:9000"
+# AWS_USE_PATH_STYLE_ENDPOINT = "true"
+# PUSHER_APP_ID = "4qa6oehyonns"
+# PUSHER_APP_KEY = "gkfcnzuog2ckodv0kaqk"
+# PUSHER_APP_SECRET = "NUdqS94cUBdpKys7ISYexm1cCn5TizKe"
+# PUSHER_HOST = "soketi"
+# PUSHER_PORT = "6001"
+# PUSHER_SCHEME = "http"
+# PUSHER_APP_CLUSTER = "mt1"
+# REDIS_CLIENT = "phpredis"
+# REDIS_HOST = "redis"
+# REDIS_PORT = "6379"
+
+[containers.dbexplorer]
+image = "phpmyadmin/phpmyadmin"
+version = "latest"
+public = true
+port = 80
+
+[containers.dbexplorer.env]
+PMA_HOST = "db"
