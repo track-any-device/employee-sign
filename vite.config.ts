@@ -20,9 +20,12 @@ export default defineConfig({
         }),
         inertia(),
         react(),
-        babel({
-            presets: [reactCompilerPreset()],
-        }),
+        // The React Compiler Babel pass is the most memory-hungry step.
+        // Set LOW_MEMORY_BUILD=1 to skip it (e.g. the Host Swarm container,
+        // where it got the build OOM-killed). The app works the same without it.
+        ...(process.env.LOW_MEMORY_BUILD === '1'
+            ? []
+            : [babel({ presets: [reactCompilerPreset()] })]),
         tailwindcss(),
         wayfinder({
             formVariants: true,
