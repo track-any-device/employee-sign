@@ -1,97 +1,113 @@
 services:
-  app:
-    image: 'hostswarm/laravel-13-php-8.5:latest'
-    environment:
-      APP_NAME: Laravel
-      APP_ENV: production
-      APP_DEBUG: 'false'
-      APP_LOCALE: en
-      LOG_CHANNEL: stderr
-      LOG_LEVEL: error
-      SESSION_DRIVER: file
-      HS_SCHEDULER: 'false'
-      HS_QUEUE_WORKER: 'false'
-      DB_CONNECTION: mysql
-      DB_HOST: db
-      DB_PORT: '3306'
-      DB_DATABASE: laravel
-      DB_USERNAME: laravel
-      DB_PASSWORD: JoVLFj53YEt5mCmTkaY1QJ0I
-      APP_KEY: 'base64:jepmb0YJ1GlSGBlOGMQF3Rpm3d5CUPUc/NRwK5H6/CE='
-      FILESYSTEM_DISK: s3
-      BROADCAST_CONNECTION: pusher
-      AWS_ACCESS_KEY_ID: app-2etmwbgf
-      AWS_SECRET_ACCESS_KEY: nM71Ypbuf74pXWYfS9HcCZ4SUFYym9VO
-      AWS_DEFAULT_REGION: us-east-1
-      AWS_BUCKET: app
-      AWS_ENDPOINT: 'http://minio:9000'
-      AWS_USE_PATH_STYLE_ENDPOINT: 'true'
-      PUSHER_APP_ID: 4qa6oehyonns
-      PUSHER_APP_KEY: gkfcnzuog2ckodv0kaqk
-      PUSHER_APP_SECRET: NUdqS94cUBdpKys7ISYexm1cCn5TizKe
-      PUSHER_HOST: soketi
-      PUSHER_PORT: '6001'
-      PUSHER_SCHEME: http
-      PUSHER_APP_CLUSTER: mt1
-      REDIS_CLIENT: phpredis
-      REDIS_HOST: redis
-      REDIS_PORT: '6379'
-    volumes:
-      - '.:/var/www/html'
-    ports:
-      - '8080:8080'
-    depends_on:
-      - db
-      - minio
-      - soketi
-      - redis
-    restart: on-failure
+    app:
+        image: 'hostswarm/laravel-13-php-8.5:latest'
+        environment:
+            APP_NAME: Laravel
+            APP_ENV: production
+            APP_DEBUG: 'false'
+            APP_LOCALE: en
+            LOG_CHANNEL: stderr
+            LOG_LEVEL: error
+            SESSION_DRIVER: file
+            HS_SCHEDULER: 'false'
+            HS_QUEUE_WORKER: 'false'
+            DB_CONNECTION: mysql
+            DB_HOST: db
+            DB_PORT: '3306'
+            DB_DATABASE: laravel
+            DB_USERNAME: laravel
+            DB_PASSWORD: JoVLFj53YEt5mCmTkaY1QJ0I
+            APP_KEY: 'base64:jepmb0YJ1GlSGBlOGMQF3Rpm3d5CUPUc/NRwK5H6/CE='
+            FILESYSTEM_DISK: s3
+            BROADCAST_CONNECTION: reverb
+            AWS_ACCESS_KEY_ID: app-2etmwbgf
+            AWS_SECRET_ACCESS_KEY: nM71Ypbuf74pXWYfS9HcCZ4SUFYym9VO
+            AWS_DEFAULT_REGION: us-east-1
+            AWS_BUCKET: app
+            AWS_ENDPOINT: 'http://minio:9000'
+            AWS_USE_PATH_STYLE_ENDPOINT: 'true'
+            REVERB_APP_ID: 4qa6oehyonns
+            REVERB_APP_KEY: gkfcnzuog2ckodv0kaqk
+            REVERB_APP_SECRET: NUdqS94cUBdpKys7ISYexm1cCn5TizKe
+            REVERB_HOST: reverb
+            REVERB_PORT: '8085'
+            REVERB_SCHEME: http
+            REDIS_CLIENT: phpredis
+            REDIS_HOST: redis
+            REDIS_PORT: '6379'
+        volumes:
+            - '.:/var/www/html'
+        ports:
+            - '8080:8080'
+        depends_on:
+            - db
+            - minio
+            - reverb
+            - redis
+        restart: on-failure
 
-  db:                        # swarm.toml [sidecars.mysql]
-    image: 'mysql:8'
-    environment:
-      MYSQL_DATABASE: laravel
-      MYSQL_USER: laravel
-      MYSQL_PASSWORD: JoVLFj53YEt5mCmTkaY1QJ0I
-      MYSQL_ROOT_PASSWORD: JoVLFj53YEt5mCmTkaY1QJ0I
-    volumes:
-      - mysql-data:/var/lib/mysql
-    restart: on-failure
+    db: # swarm.toml [sidecars.mysql]
+        image: 'mysql:8'
+        environment:
+            MYSQL_DATABASE: laravel
+            MYSQL_USER: laravel
+            MYSQL_PASSWORD: JoVLFj53YEt5mCmTkaY1QJ0I
+            MYSQL_ROOT_PASSWORD: JoVLFj53YEt5mCmTkaY1QJ0I
+        volumes:
+            - mysql-data:/var/lib/mysql
+        restart: on-failure
 
-  minio:                     # swarm.toml [sidecars.minio]
-    image: hostswarm/minio
-    environment:
-      MINIO_ROOT_USER: app-2etmwbgf
-      MINIO_ROOT_PASSWORD: nM71Ypbuf74pXWYfS9HcCZ4SUFYym9VO
-    volumes:
-      - minio-data:/data
-    restart: on-failure
+    minio: # swarm.toml [sidecars.minio]
+        image: 'minio/minio:latest' # hostswarm/minio has no arm64 build
+        command: server /data --console-address ":9001"
+        environment:
+            MINIO_ROOT_USER: app-2etmwbgf
+            MINIO_ROOT_PASSWORD: nM71Ypbuf74pXWYfS9HcCZ4SUFYym9VO
+        volumes:
+            - minio-data:/data
+        restart: on-failure
 
-  soketi:                    # swarm.toml [sidecars.soketi]
-    image: soketi/soketi
-    environment:
-      SOKETI_DEFAULT_APP_ID: 4qa6oehyonns
-      SOKETI_DEFAULT_APP_KEY: gkfcnzuog2ckodv0kaqk
-      SOKETI_DEFAULT_APP_SECRET: NUdqS94cUBdpKys7ISYexm1cCn5TizKe
-    restart: on-failure
+    reverb: # Laravel Reverb WebSocket server (replaces soketi)
+        image: 'hostswarm/laravel-13-php-8.5:latest'
+        command: php artisan reverb:start --host=0.0.0.0 --port=8085
+        environment:
+            HS_WEB: 'false'
+            HS_COMPOSER_INSTALL: 'false'
+            APP_KEY: 'base64:jepmb0YJ1GlSGBlOGMQF3Rpm3d5CUPUc/NRwK5H6/CE='
+            DB_CONNECTION: mysql
+            DB_HOST: db
+            DB_PORT: '3306'
+            DB_DATABASE: laravel
+            DB_USERNAME: laravel
+            DB_PASSWORD: JoVLFj53YEt5mCmTkaY1QJ0I
+            REVERB_APP_ID: 4qa6oehyonns
+            REVERB_APP_KEY: gkfcnzuog2ckodv0kaqk
+            REVERB_APP_SECRET: NUdqS94cUBdpKys7ISYexm1cCn5TizKe
+        volumes:
+            - '.:/var/www/html'
+        ports:
+            - '8085:8085'
+        depends_on:
+            - db
+        restart: on-failure
 
-  redis:                     # swarm.toml [sidecars] redis = true
-    image: 'redis:7-alpine'
-    volumes:
-      - redis-data:/data
-    restart: on-failure
+    redis: # swarm.toml [sidecars] redis = true
+        image: 'redis:7-alpine'
+        volumes:
+            - redis-data:/data
+        restart: on-failure
 
-  dbexplorer:
-    image: 'phpmyadmin/phpmyadmin:latest'
-    environment:
-      PMA_HOST: db
-    ports:
-      - '8081:80'
-    depends_on:
-      - db
-    restart: on-failure
+    dbexplorer:
+        image: 'phpmyadmin/phpmyadmin:latest'
+        environment:
+            PMA_HOST: db
+        ports:
+            - '8081:80'
+        depends_on:
+            - db
+        restart: on-failure
 
 volumes:
-  mysql-data:
-  minio-data:
-  redis-data:
+    mysql-data:
+    minio-data:
+    redis-data:
